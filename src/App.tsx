@@ -1,35 +1,40 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Check, Code2, Eye, FileJson, Link } from "lucide-react";
 import { ExportPanel } from "./components/ExportPanel";
 import { ImportPanel } from "./components/ImportPanel";
 import { PaletteColumn } from "./components/PaletteColumn";
-import { previewModes, starterPalettes } from "./data/starterPalettes";
-import { paletteToCss } from "./lib/paletteExport";
+import { PreviewContentEditor } from "./components/PreviewContentEditor";
+import { previewProfiles, starterPalettes } from "./data/starterPalettes";
+import {
+  defaultEditorialContent,
+  defaultGenericContent,
+} from "./data/previewContent";
+import { paletteToGenericCss } from "./lib/paletteExport";
 import { parsePalettes } from "./lib/paletteImport";
 import { createShareUrl, decodePalette } from "./lib/shareUrl";
-import type { Language, Palette, PreviewMode } from "./types";
+import type { Language, Palette, PreviewContent, PreviewProfile } from "./types";
 
 const IMPORTED_PALETTES_STORAGE_KEY = "palette-preview-lab:imported-palettes";
+const PREVIEW_CONTENT_STORAGE_KEY = "palette-preview-lab:preview-content";
 
 const translations = {
   en: {
     languageName: "English",
     switchLanguage: "Svenska",
     switchLanguageLabel: "Switch page language to Swedish",
-    title: "Compare portfolio palettes in context.",
+    title: "Compare color palettes in real interface contexts.",
     copyJson: "Copy selected palette JSON",
-    copyCss: "Copy selected palette CSS variables",
+    copyCss: "Copy generic CSS variables",
     copyShare: "Copy share URL for selected palette",
     introLabel: "How it works",
     introTitle:
       "A small lab for comparing palette ideas before they become design decisions.",
     introBody:
-      "Paste palette JSON from your AI, switch between preview modes, and compare how each color system behaves across hero, project, editorial, and dark contexts. Select a palette to copy CSS variables, export JSON, or share a URL with the current palette embedded.",
-    introLinkPrefix: "Built for color discussions around",
+      "Paste palette JSON from your AI, switch between preview profiles, and compare how each color system behaves across landing pages, apps, docs, and dark sections. Select a palette to copy generic CSS variables, export the original JSON, or share a URL with the current palette embedded.",
     promptLabel: "Example prompt",
     promptIntro:
       "Copy this when asking an AI to generate palettes that work in this tool:",
-    prompt: `You are generating color palettes for Palette Preview Lab — a comparison tool that previews palette ideas side by side in realistic portfolio UI mockups (hero, projects, editorial, and dark sections).
+    prompt: `You are generating color palettes for Palette Preview Lab — a comparison tool that previews palette ideas side by side in realistic interface mockups (landing pages, SaaS apps, e-commerce, documentation, and dark sections).
 
 Return one or more palettes as JSON that can be pasted directly into the import field. Use a JSON array when proposing multiple options.
 
@@ -38,24 +43,27 @@ Each palette object must include:
 - description (optional string — mood or intent)
 - colors (object with every role below, as hex or rgba)
 
-Required color roles:
-- paper — page background
-- paperSoft — cards and panels
-- paperWarm — warm supporting surfaces
-- ink — primary text
-- inkSoft — secondary headings
-- inkMuted — metadata and captions
-- line — subtle borders
-- lineStrong — dividers and rules
-- solar — primary accent
-- solarBright — hover and glow accent
-- copper — secondary accent
-- deepSpace — dark section background
-- spaceBlue — dark cards
+Required color roles (generic scheme):
+- background — page background
+- surface — cards and panels
+- surfaceAlt — alternate surfaces
+- text — primary text
+- textSoft — secondary headings
+- textMuted — metadata and captions
+- border — subtle borders
+- borderStrong — dividers and rules
+- primary — primary accent
+- primaryHover — hover accent
+- secondary — secondary accent
+- darkBackground — dark section background
+- darkSurface — dark cards
+
+Alternatively, editorial scheme roles are also accepted:
+paper, paperSoft, paperWarm, ink, inkSoft, inkMuted, line, lineStrong, solar, solarBright, copper, deepSpace, spaceBlue
 
 Briefly explain what each palette explores so it is easy to compare options.`,
     controlsLabel: "Palette controls",
-    previewModeLabel: "Preview mode",
+    previewProfileLabel: "Preview profile",
     boardLabel: "Palette comparison board",
     readyNotice: "Ready for AI palette JSON.",
     loadedNotice: (name: string) => `Loaded ${name} from the URL hash.`,
@@ -65,31 +73,32 @@ Briefly explain what each palette explores so it is easy to compare options.`,
     parseError: "Could not parse palette JSON.",
     hashError: "Could not read the palette embedded in the URL hash.",
     clipboardError: "Clipboard access was blocked by the browser.",
-    modes: {
-      hero: "Hero",
-      projects: "Projects",
-      editorial: "Editorial",
-      dark: "Dark",
-    } satisfies Record<PreviewMode, string>,
+    profiles: {
+      landing: "Generic Landing Page",
+      "editorial-portfolio": "Editorial Portfolio",
+      saas: "SaaS / App UI",
+      ecommerce: "E-commerce",
+      documentation: "Documentation",
+      dark: "Dark Section",
+    } satisfies Record<PreviewProfile, string>,
   },
   sv: {
     languageName: "Svenska",
     switchLanguage: "English",
     switchLanguageLabel: "Växla sidans språk till engelska",
-    title: "Jämför färgpaletter i sitt sammanhang.",
+    title: "Jämför färgpaletter i verkliga gränssnittskontexter.",
     copyJson: "Kopiera vald palett som JSON",
-    copyCss: "Kopiera CSS-variabler för vald palett",
+    copyCss: "Kopiera generiska CSS-variabler",
     copyShare: "Kopiera delningslänk för vald palett",
     introLabel: "Så funkar det",
     introTitle:
       "Ett litet labb för att jämföra palettidéer innan de blir designbeslut.",
     introBody:
-      "Klistra in palett-JSON från din AI, växla mellan preview-lägen och jämför hur varje färgsystem beter sig i hero, projekt, editorial och mörka sektioner. Välj en palett för att kopiera CSS-variabler, exportera JSON eller dela en URL med den aktuella paletten inbäddad.",
-    introLinkPrefix: "Byggd för färgdiskussioner kring",
+      "Klistra in palett-JSON från din AI, växla mellan preview-profiler och jämför hur varje färgsystem beter sig i landningssidor, appar, dokumentation och mörka sektioner. Välj en palett för att kopiera generiska CSS-variabler, exportera original-JSON eller dela en URL med den aktuella paletten inbäddad.",
     promptLabel: "Exempelprompt",
     promptIntro:
       "Kopiera den här när du ber en AI generera paletter som fungerar i verktyget:",
-    prompt: `Du genererar färgpaletter för Palette Preview Lab — ett jämförelseverktyg som visar palettförslag sida vid sida i realistiska portfolio-UI-mockups (hero, projekt, editorial och mörka sektioner).
+    prompt: `Du genererar färgpaletter för Palette Preview Lab — ett jämförelseverktyg som visar palettförslag sida vid sida i realistiska gränssnittsmockups (landningssidor, SaaS-appar, e-handel, dokumentation och mörka sektioner).
 
 Returnera en eller flera paletter som JSON som kan klistras in direkt i importfältet. Använd en JSON-array när du föreslår flera alternativ.
 
@@ -98,24 +107,27 @@ Varje palettobjekt måste innehålla:
 - description (valfri sträng — stämning eller avsikt)
 - colors (objekt med varje roll nedan, som hex eller rgba)
 
-Obligatoriska färgroller:
-- paper — sidbakgrund
-- paperSoft — kort och paneler
-- paperWarm — varma stödytor
-- ink — primär text
-- inkSoft — sekundära rubriker
-- inkMuted — metadata och bildtexter
-- line — subtila kanter
-- lineStrong — avdelare och linjer
-- solar — primär accent
-- solarBright — hover- och glöd-accent
-- copper — sekundär accent
-- deepSpace — bakgrund i mörka sektioner
-- spaceBlue — mörka kort
+Obligatoriska färgroller (generiskt schema):
+- background — sidbakgrund
+- surface — kort och paneler
+- surfaceAlt — alternativa ytor
+- text — primär text
+- textSoft — sekundära rubriker
+- textMuted — metadata och bildtexter
+- border — subtila kanter
+- borderStrong — avdelare och linjer
+- primary — primär accent
+- primaryHover — hover-accent
+- secondary — sekundär accent
+- darkBackground — bakgrund i mörka sektioner
+- darkSurface — mörka kort
+
+Alternativt accepteras även editorial-schema:
+paper, paperSoft, paperWarm, ink, inkSoft, inkMuted, line, lineStrong, solar, solarBright, copper, deepSpace, spaceBlue
 
 Förklara kort vad varje palett utforskar så att alternativen är lätta att jämföra.`,
     controlsLabel: "Palettkontroller",
-    previewModeLabel: "Preview-läge",
+    previewProfileLabel: "Preview-profil",
     boardLabel: "Jämförelsevy för paletter",
     readyNotice: "Redo för AI-palett-JSON.",
     loadedNotice: (name: string) => `Laddade ${name} från URL-hashen.`,
@@ -125,12 +137,14 @@ Förklara kort vad varje palett utforskar så att alternativen är lätta att j�
     parseError: "Kunde inte tolka palett-JSON.",
     hashError: "Kunde inte läsa paletten som är inbäddad i URL-hashen.",
     clipboardError: "Webbläsaren blockerade åtkomst till urklipp.",
-    modes: {
-      hero: "Hero",
-      projects: "Projekt",
-      editorial: "Editorial",
-      dark: "Mörk",
-    } satisfies Record<PreviewMode, string>,
+    profiles: {
+      landing: "Generisk landningssida",
+      "editorial-portfolio": "Editorial portfolio",
+      saas: "SaaS / app-UI",
+      ecommerce: "E-handel",
+      documentation: "Dokumentation",
+      dark: "Mörk sektion",
+    } satisfies Record<PreviewProfile, string>,
   },
 };
 
@@ -157,19 +171,85 @@ const loadImportedPalettes = (): Palette[] => {
   }
 };
 
+const loadPreviewContent = (): PreviewContent => {
+  try {
+    const stored = window.localStorage.getItem(PREVIEW_CONTENT_STORAGE_KEY);
+    if (!stored) return defaultGenericContent;
+    return { ...defaultGenericContent, ...JSON.parse(stored) };
+  } catch {
+    return defaultGenericContent;
+  }
+};
+
+type HashLoadResult =
+  | { status: "loaded"; palettes: Palette[] }
+  | { status: "error" }
+  | { status: "none" };
+
+const loadHashPalettes = (): HashLoadResult => {
+  const hash = window.location.hash.replace(/^#palette=/, "");
+  if (!hash || hash === window.location.hash) return { status: "none" };
+
+  try {
+    const decoded = decodePalette(hash);
+    const palettes = parsePalettes(decoded);
+    return { status: "loaded", palettes };
+  } catch {
+    return { status: "error" };
+  }
+};
+
+const getPreviewContentForProfile = (
+  profile: PreviewProfile,
+  saved: PreviewContent,
+): PreviewContent => {
+  if (profile === "editorial-portfolio") {
+    return {
+      ...defaultEditorialContent,
+      projectTitle: saved.projectTitle || defaultEditorialContent.projectTitle,
+      subtitle: saved.subtitle || defaultEditorialContent.subtitle,
+      primaryCta: saved.primaryCta || defaultEditorialContent.primaryCta,
+      secondaryCta: saved.secondaryCta || defaultEditorialContent.secondaryCta,
+      featuredItems: saved.featuredItems.some(Boolean)
+        ? saved.featuredItems
+        : defaultEditorialContent.featuredItems,
+    };
+  }
+  return saved;
+};
+
 function App() {
   const initialLanguage = getBrowserLanguage();
+  const hashLoad = loadHashPalettes();
   const [language, setLanguage] = useState<Language>(initialLanguage);
-  const [importedPalettes, setImportedPalettes] =
-    useState<Palette[]>(loadImportedPalettes);
-  const [mode, setMode] = useState<PreviewMode>("hero");
-  const [selectedId, setSelectedId] = useState(starterPalettes[0].id);
-  const [jsonInput, setJsonInput] = useState("");
-  const [notice, setNotice] = useState(
-    () => translations[initialLanguage].readyNotice,
+  const [importedPalettes, setImportedPalettes] = useState<Palette[]>(() => {
+    const stored = loadImportedPalettes();
+    if (hashLoad.status === "loaded") {
+      return [...stored, ...hashLoad.palettes];
+    }
+    return stored;
+  });
+  const [profile, setProfile] = useState<PreviewProfile>("landing");
+  const [previewContent, setPreviewContent] =
+    useState<PreviewContent>(loadPreviewContent);
+  const [selectedId, setSelectedId] = useState(() =>
+    hashLoad.status === "loaded"
+      ? hashLoad.palettes[0].id
+      : starterPalettes[0].id,
   );
+  const [jsonInput, setJsonInput] = useState("");
+  const [notice, setNotice] = useState(() => {
+    if (hashLoad.status === "loaded") {
+      return translations[initialLanguage].loadedNotice(
+        hashLoad.palettes[0].name,
+      );
+    }
+    if (hashLoad.status === "error") {
+      return translations[initialLanguage].hashError;
+    }
+    return translations[initialLanguage].readyNotice;
+  });
   const [copied, setCopied] = useState<string | null>(null);
-  const hasLoadedHash = useRef(false);
   const t = translations[language];
   const nextLanguage: Language = language === "sv" ? "en" : "sv";
 
@@ -181,8 +261,13 @@ function App() {
   const selectedPalette =
     palettes.find((palette) => palette.id === selectedId) ?? palettes[0];
 
+  const activePreviewContent = useMemo(
+    () => getPreviewContentForProfile(profile, previewContent),
+    [profile, previewContent],
+  );
+
   const exportText = useMemo(
-    () => (selectedPalette ? paletteToCss(selectedPalette) : ""),
+    () => (selectedPalette ? paletteToGenericCss(selectedPalette) : ""),
     [selectedPalette],
   );
 
@@ -194,26 +279,15 @@ function App() {
   }, [importedPalettes]);
 
   useEffect(() => {
-    document.documentElement.lang = language;
-  }, [language]);
+    window.localStorage.setItem(
+      PREVIEW_CONTENT_STORAGE_KEY,
+      JSON.stringify(previewContent),
+    );
+  }, [previewContent]);
 
   useEffect(() => {
-    if (hasLoadedHash.current) return;
-    hasLoadedHash.current = true;
-
-    const hash = window.location.hash.replace(/^#palette=/, "");
-    if (!hash || hash === window.location.hash) return;
-
-    try {
-      const decoded = decodePalette(hash);
-      const imported = parsePalettes(decoded);
-      setImportedPalettes((current) => [...current, ...imported]);
-      setSelectedId(imported[0].id);
-      setNotice(t.loadedNotice(imported[0].name));
-    } catch {
-      setNotice(t.hashError);
-    }
-  }, [t]);
+    document.documentElement.lang = language;
+  }, [language]);
 
   const handleImport = () => {
     try {
@@ -247,6 +321,14 @@ function App() {
     await handleCopy("share", createShareUrl(selectedPalette));
   };
 
+  const handleResetPreviewContent = () => {
+    setPreviewContent(
+      profile === "editorial-portfolio"
+        ? defaultEditorialContent
+        : defaultGenericContent,
+    );
+  };
+
   return (
     <main className="app-shell" lang={language}>
       <section className="topbar">
@@ -274,7 +356,19 @@ function App() {
             type="button"
             title={t.copyJson}
             onClick={() =>
-              handleCopy("json", JSON.stringify(selectedPalette, null, 2))
+              handleCopy(
+                "json",
+                JSON.stringify(
+                  {
+                    name: selectedPalette.name,
+                    description: selectedPalette.description,
+                    roleScheme: selectedPalette.roleScheme,
+                    colors: selectedPalette.colors,
+                  },
+                  null,
+                  2,
+                ),
+              )
             }
           >
             {copied === "json" ? <Check size={18} /> : <FileJson size={18} />}
@@ -305,17 +399,6 @@ function App() {
           <p className="section-label">{t.introLabel}</p>
           <h2 id="intro-title">{t.introTitle}</h2>
           <p>{t.introBody}</p>
-          <p className="intro-link">
-            {t.introLinkPrefix}{" "}
-            <a
-              href="https://www.jonasolson.se"
-              target="_blank"
-              rel="noreferrer"
-            >
-              www.jonasolson.se
-            </a>
-            .
-          </p>
         </div>
         <div className="prompt-example">
           <p className="section-label">{t.promptLabel}</p>
@@ -328,21 +411,28 @@ function App() {
         <div
           className="mode-switch"
           role="group"
-          aria-label={t.previewModeLabel}
+          aria-label={t.previewProfileLabel}
         >
-          {previewModes.map((previewMode) => (
+          {previewProfiles.map((previewProfile) => (
             <button
-              aria-pressed={mode === previewMode.id}
-              key={previewMode.id}
-              className={mode === previewMode.id ? "is-active" : ""}
+              aria-pressed={profile === previewProfile.id}
+              key={previewProfile.id}
+              className={profile === previewProfile.id ? "is-active" : ""}
               type="button"
-              onClick={() => setMode(previewMode.id)}
+              onClick={() => setProfile(previewProfile.id)}
             >
               <Eye size={15} />
-              {t.modes[previewMode.id]}
+              {t.profiles[previewProfile.id]}
             </button>
           ))}
         </div>
+
+        <PreviewContentEditor
+          content={activePreviewContent}
+          language={language}
+          onChange={setPreviewContent}
+          onReset={handleResetPreviewContent}
+        />
 
         <ImportPanel
           importedCount={importedPalettes.length}
@@ -360,7 +450,8 @@ function App() {
           <PaletteColumn
             key={palette.id}
             palette={palette}
-            mode={mode}
+            profile={profile}
+            previewContent={activePreviewContent}
             isSelected={palette.id === selectedPalette.id}
             onSelect={() => setSelectedId(palette.id)}
             language={language}

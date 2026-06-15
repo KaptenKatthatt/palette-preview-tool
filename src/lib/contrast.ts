@@ -1,10 +1,71 @@
+import { normalizePaletteColors } from "./paletteNormalize";
 import type { Palette } from "../types";
+
+export const contrastRatio = (foreground: string, background: string) => {
+  const fg = parseColor(foreground);
+  const bg = parseColor(background);
+
+  if (!fg || !bg) {
+    return null;
+  }
+
+  const lighter = Math.max(luminance(fg), luminance(bg));
+  const darker = Math.min(luminance(fg), luminance(bg));
+
+  return (lighter + 0.05) / (darker + 0.05);
+};
+
+export const contrastGrade = (ratio: number | null) => {
+  if (!ratio) return "Check";
+  if (ratio >= 7) return "AAA";
+  if (ratio >= 4.5) return "AA";
+  if (ratio >= 3) return "Large";
+  return "Low";
+};
+
+export const getContrastChecks = (palette: Palette) => {
+  const colors = normalizePaletteColors(palette);
+  return [
+    {
+      label: "text / background",
+      fg: colors.text,
+      bg: colors.background,
+    },
+    {
+      label: "muted / background",
+      fg: colors.textMuted,
+      bg: colors.background,
+    },
+    {
+      label: "background / dark",
+      fg: colors.background,
+      bg: colors.darkBackground,
+    },
+    {
+      label: "primary / background",
+      fg: colors.primary,
+      bg: colors.background,
+    },
+    {
+      label: "primary / dark",
+      fg: colors.primary,
+      bg: colors.darkBackground,
+    },
+    {
+      label: "button text",
+      fg: colors.text,
+      bg: colors.primary,
+    },
+  ];
+};
 
 const parseColor = (value: string): [number, number, number] | null => {
   const colorValue = value.trim();
   const shortHex = /^#([0-9a-f]{3})$/i.exec(colorValue);
   const longHex = /^#([0-9a-f]{6})$/i.exec(colorValue);
-  const rgba = /^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/i.exec(colorValue);
+  const rgba = /^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/i.exec(
+    colorValue,
+  );
 
   if (shortHex) {
     return shortHex[1].split("").map((part) => parseInt(part + part, 16)) as [
@@ -39,34 +100,3 @@ const luminance = ([r, g, b]: [number, number, number]) => {
   });
   return values[0] * 0.2126 + values[1] * 0.7152 + values[2] * 0.0722;
 };
-
-export const contrastRatio = (foreground: string, background: string) => {
-  const fg = parseColor(foreground);
-  const bg = parseColor(background);
-
-  if (!fg || !bg) {
-    return null;
-  }
-
-  const lighter = Math.max(luminance(fg), luminance(bg));
-  const darker = Math.min(luminance(fg), luminance(bg));
-
-  return (lighter + 0.05) / (darker + 0.05);
-};
-
-export const contrastGrade = (ratio: number | null) => {
-  if (!ratio) return "Check";
-  if (ratio >= 7) return "AAA";
-  if (ratio >= 4.5) return "AA";
-  if (ratio >= 3) return "Large";
-  return "Low";
-};
-
-export const getContrastChecks = (palette: Palette) => [
-  { label: "ink / paper", fg: palette.colors.ink, bg: palette.colors.paper },
-  { label: "muted / paper", fg: palette.colors.inkMuted, bg: palette.colors.paper },
-  { label: "paper / deep", fg: palette.colors.paper, bg: palette.colors.deepSpace },
-  { label: "solar / paper", fg: palette.colors.solar, bg: palette.colors.paper },
-  { label: "solar / deep", fg: palette.colors.solar, bg: palette.colors.deepSpace },
-  { label: "button text", fg: palette.colors.ink, bg: palette.colors.solar },
-];

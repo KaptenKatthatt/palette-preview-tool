@@ -1,8 +1,13 @@
 import type { CSSProperties, KeyboardEvent } from "react";
+import {
+  editorialRoleLabels,
+  genericRoleLabels,
+} from "../data/starterPalettes";
+import { normalizePaletteColors } from "../lib/paletteNormalize";
 import { ColorRoleList } from "./ColorRoleList";
 import { ContrastList } from "./ContrastList";
-import { PortfolioPreview } from "./PortfolioPreview";
-import type { Language, Palette, PreviewMode } from "../types";
+import { InterfacePreview } from "./InterfacePreview";
+import type { Language, Palette, PreviewContent, PreviewProfile } from "../types";
 
 const copy = {
   en: {
@@ -17,35 +22,43 @@ const copy = {
   },
 };
 
+const genericCssVars = (palette: Palette): CSSProperties => {
+  const colors = normalizePaletteColors(palette);
+  return {
+    "--background": colors.background,
+    "--surface": colors.surface,
+    "--surface-alt": colors.surfaceAlt,
+    "--text": colors.text,
+    "--text-soft": colors.textSoft,
+    "--text-muted": colors.textMuted,
+    "--border": colors.border,
+    "--border-strong": colors.borderStrong,
+    "--primary": colors.primary,
+    "--primary-hover": colors.primaryHover,
+    "--secondary": colors.secondary,
+    "--dark-background": colors.darkBackground,
+    "--dark-surface": colors.darkSurface,
+  } as CSSProperties;
+};
+
 export function PaletteColumn({
   palette,
   language,
-  mode,
+  profile,
+  previewContent,
   isSelected,
   onSelect,
 }: {
   palette: Palette;
   language: Language;
-  mode: PreviewMode;
+  profile: PreviewProfile;
+  previewContent: PreviewContent;
   isSelected: boolean;
   onSelect: () => void;
 }) {
   const text = copy[language];
-  const styles = {
-    "--paper": palette.colors.paper,
-    "--paper-soft": palette.colors.paperSoft,
-    "--paper-warm": palette.colors.paperWarm,
-    "--ink": palette.colors.ink,
-    "--ink-soft": palette.colors.inkSoft,
-    "--ink-muted": palette.colors.inkMuted,
-    "--line": palette.colors.line,
-    "--line-strong": palette.colors.lineStrong,
-    "--solar": palette.colors.solar,
-    "--solar-bright": palette.colors.solarBright,
-    "--copper": palette.colors.copper,
-    "--deep-space": palette.colors.deepSpace,
-    "--space-blue": palette.colors.spaceBlue,
-  } as CSSProperties;
+  const roleLabels =
+    palette.roleScheme === "generic" ? genericRoleLabels : editorialRoleLabels;
 
   const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     if (event.key === "Enter" || event.key === " ") {
@@ -60,7 +73,7 @@ export function PaletteColumn({
       aria-pressed={isSelected}
       className={`palette-column ${isSelected ? "is-selected" : ""}`}
       role="button"
-      style={styles}
+      style={genericCssVars(palette)}
       tabIndex={0}
       onClick={onSelect}
       onKeyDown={handleKeyDown}
@@ -74,8 +87,12 @@ export function PaletteColumn({
       </header>
       <p className="palette-description">{palette.description}</p>
 
-      <PortfolioPreview mode={mode} language={language} />
-      <ColorRoleList palette={palette} />
+      <InterfacePreview
+        profile={profile}
+        language={language}
+        content={previewContent}
+      />
+      <ColorRoleList palette={palette} roleLabels={roleLabels} />
       <ContrastList palette={palette} language={language} />
     </article>
   );

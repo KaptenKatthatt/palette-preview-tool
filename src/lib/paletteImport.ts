@@ -1,10 +1,35 @@
-import { requiredRoles } from "../data/starterPalettes";
-import type { Palette, PaletteColors } from "../types";
+import { getRequiredRoles, detectRoleScheme } from "./paletteNormalize";
+import type { Palette, PaletteColors, PaletteRoleScheme } from "../types";
+import { slugify } from "./paletteImportUtils";
+
+export { slugify } from "./paletteImportUtils";
 
 export const sampleJson = `[
   {
+    "name": "Neutral Product",
+    "description": "Balanced palette for SaaS and landing pages",
+    "colors": {
+      "background": "#F6F7F9",
+      "surface": "#FFFFFF",
+      "surfaceAlt": "#EEF1F5",
+      "text": "#0F172A",
+      "textSoft": "#334155",
+      "textMuted": "#64748B",
+      "border": "rgba(15, 23, 42, 0.12)",
+      "borderStrong": "rgba(15, 23, 42, 0.22)",
+      "primary": "#2563EB",
+      "primaryHover": "#3B82F6",
+      "secondary": "#0D9488",
+      "darkBackground": "#0B1220",
+      "darkSurface": "#162033"
+    }
+  }
+]`;
+
+export const sampleEditorialJson = `[
+  {
     "name": "Editorial Orbit",
-    "description": "Warm editorial palette for Jonas portfolio",
+    "description": "Warm editorial palette",
     "colors": {
       "paper": "#F4EFE6",
       "paperSoft": "#FBF7EF",
@@ -23,13 +48,6 @@ export const sampleJson = `[
   }
 ]`;
 
-export const slugify = (value: string) =>
-  value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-
 const createPalette = (input: unknown, index: number): Palette => {
   if (!input || typeof input !== "object") {
     throw new Error(`Palette ${index + 1} is not an object.`);
@@ -42,8 +60,15 @@ const createPalette = (input: unknown, index: number): Palette => {
     throw new Error(`Palette ${index + 1} is missing a colors object.`);
   }
 
-  const missing = requiredRoles.filter(
-    (role) => typeof (colors as Partial<PaletteColors>)[role] !== "string",
+  const roleScheme: PaletteRoleScheme =
+    maybePalette.roleScheme === "generic" ||
+    maybePalette.roleScheme === "editorial"
+      ? maybePalette.roleScheme
+      : detectRoleScheme(colors as Record<string, unknown>);
+
+  const required = getRequiredRoles(roleScheme);
+  const missing = required.filter(
+    (role) => typeof (colors as Record<string, unknown>)[role] !== "string",
   );
 
   if (missing.length > 0) {
@@ -52,7 +77,10 @@ const createPalette = (input: unknown, index: number): Palette => {
     );
   }
 
-  const name = typeof maybePalette.name === "string" ? maybePalette.name : `AI Palette ${index + 1}`;
+  const name =
+    typeof maybePalette.name === "string"
+      ? maybePalette.name
+      : `AI Palette ${index + 1}`;
   const description =
     typeof maybePalette.description === "string"
       ? maybePalette.description
@@ -62,6 +90,7 @@ const createPalette = (input: unknown, index: number): Palette => {
     id: `${slugify(name) || "palette"}-${Date.now()}-${index}`,
     name,
     description,
+    roleScheme,
     colors: colors as PaletteColors,
   };
 };

@@ -1,18 +1,24 @@
 import { Check, Clipboard, Download } from "lucide-react";
+import {
+  paletteToOriginalCss,
+  paletteToOriginalJson,
+} from "../lib/paletteExport";
 import type { Language, Palette } from "../types";
 
 const copy = {
   en: {
     aria: "Export selected palette",
     label: "Selected export",
-    copyCss: "Copy CSS",
-    copyJson: "Copy JSON",
+    copyGenericCss: "Copy generic CSS",
+    copyOriginalCss: "Copy original CSS",
+    copyJson: "Copy original JSON",
   },
   sv: {
     aria: "Exportera vald palett",
     label: "Vald export",
-    copyCss: "Kopiera CSS",
-    copyJson: "Kopiera JSON",
+    copyGenericCss: "Kopiera generisk CSS",
+    copyOriginalCss: "Kopiera original CSS",
+    copyJson: "Kopiera original JSON",
   },
 };
 
@@ -30,6 +36,7 @@ export function ExportPanel({
   onCopy: (label: string, text: string) => void;
 }) {
   const text = copy[language];
+  const originalCss = paletteToOriginalCss(palette);
 
   return (
     <section className="export-band" aria-label={text.aria}>
@@ -40,12 +47,39 @@ export function ExportPanel({
       </div>
       <pre>{exportText}</pre>
       <div className="export-actions">
-        <button type="button" onClick={() => onCopy("css-bottom", exportText)}>
-          {copied === "css-bottom" ? <Check size={16} /> : <Clipboard size={16} />}
-          {text.copyCss}
+        <button
+          type="button"
+          onClick={() => onCopy("css-generic", exportText)}
+        >
+          {copied === "css-generic" ? (
+            <Check size={16} />
+          ) : (
+            <Clipboard size={16} />
+          )}
+          {text.copyGenericCss}
         </button>
-        <button type="button" onClick={() => onCopy("json-bottom", JSON.stringify(palette, null, 2))}>
-          {copied === "json-bottom" ? <Check size={16} /> : <Download size={16} />}
+        <button
+          type="button"
+          onClick={() => onCopy("css-original", originalCss)}
+        >
+          {copied === "css-original" ? (
+            <Check size={16} />
+          ) : (
+            <Clipboard size={16} />
+          )}
+          {text.copyOriginalCss}
+        </button>
+        <button
+          type="button"
+          onClick={() =>
+            onCopy("json-original", paletteToOriginalJson(palette))
+          }
+        >
+          {copied === "json-original" ? (
+            <Check size={16} />
+          ) : (
+            <Download size={16} />
+          )}
           {text.copyJson}
         </button>
       </div>
