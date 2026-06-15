@@ -23,3 +23,5 @@ export type Palette = {
 };
 
 export type PreviewMode = "hero" | "projects" | "editorial" | "dark";
+
+export type Language = "en" | "sv";

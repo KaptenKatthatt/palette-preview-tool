@@ -98,6 +98,7 @@ h2 {
 
 .icon-button,
 .export-actions button,
+.language-toggle,
 .primary-action,
 .secondary-action,
 .mode-switch button {
@@ -120,8 +121,17 @@ h2 {
   width: 42px;
 }
 
+.language-toggle {
+  padding: 0 13px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.74rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
 .icon-button:hover,
 .export-actions button:hover,
+.language-toggle:hover,
 .mode-switch button:hover {
   transform: translateY(-1px);
   border-color: rgba(7, 24, 39, 0.28);
@@ -733,6 +743,10 @@ h2 {
 
   .icon-button {
     flex: 1;
+  }
+
+  .language-toggle {
+    flex: 1.2;
   }
 
   .mode-switch,

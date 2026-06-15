@@ -2,19 +2,35 @@ import type { CSSProperties, KeyboardEvent } from "react";
 import { ColorRoleList } from "./ColorRoleList";
 import { ContrastList } from "./ContrastList";
 import { PortfolioPreview } from "./PortfolioPreview";
-import type { Palette, PreviewMode } from "../types";
+import type { Language, Palette, PreviewMode } from "../types";
+
+const copy = {
+  en: {
+    aria: (name: string) => `Select ${name} palette`,
+    label: "Palette",
+    selected: "Selected",
+  },
+  sv: {
+    aria: (name: string) => `Välj paletten ${name}`,
+    label: "Palett",
+    selected: "Vald",
+  },
+};
 
 export function PaletteColumn({
   palette,
+  language,
   mode,
   isSelected,
   onSelect,
 }: {
   palette: Palette;
+  language: Language;
   mode: PreviewMode;
   isSelected: boolean;
   onSelect: () => void;
 }) {
+  const text = copy[language];
   const styles = {
     "--paper": palette.colors.paper,
     "--paper-soft": palette.colors.paperSoft,
@@ -40,7 +56,7 @@ export function PaletteColumn({
 
   return (
     <article
-      aria-label={`Select ${palette.name} palette`}
+      aria-label={text.aria(palette.name)}
       aria-pressed={isSelected}
       className={`palette-column ${isSelected ? "is-selected" : ""}`}
       role="button"
@@ -51,16 +67,16 @@ export function PaletteColumn({
     >
       <header className="palette-header">
         <div>
-          <p className="section-label">Palette</p>
+          <p className="section-label">{text.label}</p>
           <h2>{palette.name}</h2>
         </div>
-        {isSelected ? <span className="selected-pill">Selected</span> : null}
+        {isSelected ? <span className="selected-pill">{text.selected}</span> : null}
       </header>
       <p className="palette-description">{palette.description}</p>
 
-      <PortfolioPreview mode={mode} />
+      <PortfolioPreview mode={mode} language={language} />
       <ColorRoleList palette={palette} />
-      <ContrastList palette={palette} />
+      <ContrastList palette={palette} language={language} />
     </article>
   );
 }

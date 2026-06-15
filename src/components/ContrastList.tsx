@@ -1,11 +1,28 @@
 import { contrastGrade, contrastRatio, getContrastChecks } from "../lib/contrast";
-import type { Palette } from "../types";
+import type { Language, Palette } from "../types";
 
-export function ContrastList({ palette }: { palette: Palette }) {
+const copy = {
+  en: {
+    label: "Contrast",
+  },
+  sv: {
+    label: "Kontrast",
+  },
+};
+
+export function ContrastList({
+  language,
+  palette,
+}: {
+  language: Language;
+  palette: Palette;
+}) {
+  const text = copy[language];
+
   return (
     <div className="contrast-list">
       <div className="contrast-list__header">
-        <p className="section-label">Contrast</p>
+        <p className="section-label">{text.label}</p>
       </div>
       {getContrastChecks(palette).map((check) => {
         const ratio = contrastRatio(check.fg, check.bg);
