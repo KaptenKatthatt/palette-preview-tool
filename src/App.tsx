@@ -21,12 +21,14 @@ const translations = {
     copyCss: "Copy selected palette CSS variables",
     copyShare: "Copy share URL for selected palette",
     introLabel: "How it works",
-    introTitle: "A small lab for comparing palette ideas before they become design decisions.",
+    introTitle:
+      "A small lab for comparing palette ideas before they become design decisions.",
     introBody:
       "Paste palette JSON from your AI, switch between preview modes, and compare how each color system behaves across hero, project, editorial, and dark contexts. Select a palette to copy CSS variables, export JSON, or share a URL with the current palette embedded.",
     introLinkPrefix: "Built for color discussions around",
     promptLabel: "Example prompt",
-    promptIntro: "Copy this when asking an AI to generate palettes that work in this tool:",
+    promptIntro:
+      "Copy this when asking an AI to generate palettes that work in this tool:",
     prompt: `You are generating color palettes for Palette Preview Lab — a comparison tool that previews palette ideas side by side in realistic portfolio UI mockups (hero, projects, editorial, and dark sections).
 
 Return one or more palettes as JSON that can be pasted directly into the import field. Use a JSON array when proposing multiple options.
@@ -57,7 +59,8 @@ Briefly explain what each palette explores so it is easy to compare options.`,
     boardLabel: "Palette comparison board",
     readyNotice: "Ready for AI palette JSON.",
     loadedNotice: (name: string) => `Loaded ${name} from the URL hash.`,
-    addedNotice: (count: number) => `Added ${count} palette${count === 1 ? "" : "s"}.`,
+    addedNotice: (count: number) =>
+      `Added ${count} palette${count === 1 ? "" : "s"}.`,
     clearedNotice: "Cleared imported palettes.",
     parseError: "Could not parse palette JSON.",
     hashError: "Could not read the palette embedded in the URL hash.",
@@ -73,17 +76,19 @@ Briefly explain what each palette explores so it is easy to compare options.`,
     languageName: "Svenska",
     switchLanguage: "English",
     switchLanguageLabel: "Växla sidans språk till engelska",
-    title: "Jämför portfoliopaletter i sitt sammanhang.",
+    title: "Jämför färgpaletter i sitt sammanhang.",
     copyJson: "Kopiera vald palett som JSON",
     copyCss: "Kopiera CSS-variabler för vald palett",
     copyShare: "Kopiera delningslänk för vald palett",
     introLabel: "Så funkar det",
-    introTitle: "Ett litet labb för att jämföra palettidéer innan de blir designbeslut.",
+    introTitle:
+      "Ett litet labb för att jämföra palettidéer innan de blir designbeslut.",
     introBody:
       "Klistra in palett-JSON från din AI, växla mellan preview-lägen och jämför hur varje färgsystem beter sig i hero, projekt, editorial och mörka sektioner. Välj en palett för att kopiera CSS-variabler, exportera JSON eller dela en URL med den aktuella paletten inbäddad.",
     introLinkPrefix: "Byggd för färgdiskussioner kring",
     promptLabel: "Exempelprompt",
-    promptIntro: "Kopiera den här när du ber en AI generera paletter som fungerar i verktyget:",
+    promptIntro:
+      "Kopiera den här när du ber en AI generera paletter som fungerar i verktyget:",
     prompt: `Du genererar färgpaletter för Palette Preview Lab — ett jämförelseverktyg som visar palettförslag sida vid sida i realistiska portfolio-UI-mockups (hero, projekt, editorial och mörka sektioner).
 
 Returnera en eller flera paletter som JSON som kan klistras in direkt i importfältet. Använd en JSON-array när du föreslår flera alternativ.
@@ -114,7 +119,8 @@ Förklara kort vad varje palett utforskar så att alternativen är lätta att j�
     boardLabel: "Jämförelsevy för paletter",
     readyNotice: "Redo för AI-palett-JSON.",
     loadedNotice: (name: string) => `Laddade ${name} från URL-hashen.`,
-    addedNotice: (count: number) => `Lade till ${count} palett${count === 1 ? "" : "er"}.`,
+    addedNotice: (count: number) =>
+      `Lade till ${count} palett${count === 1 ? "" : "er"}.`,
     clearedNotice: "Rensade importerade paletter.",
     parseError: "Kunde inte tolka palett-JSON.",
     hashError: "Kunde inte läsa paletten som är inbäddad i URL-hashen.",
@@ -154,11 +160,14 @@ const loadImportedPalettes = (): Palette[] => {
 function App() {
   const initialLanguage = getBrowserLanguage();
   const [language, setLanguage] = useState<Language>(initialLanguage);
-  const [importedPalettes, setImportedPalettes] = useState<Palette[]>(loadImportedPalettes);
+  const [importedPalettes, setImportedPalettes] =
+    useState<Palette[]>(loadImportedPalettes);
   const [mode, setMode] = useState<PreviewMode>("hero");
   const [selectedId, setSelectedId] = useState(starterPalettes[0].id);
   const [jsonInput, setJsonInput] = useState("");
-  const [notice, setNotice] = useState(() => translations[initialLanguage].readyNotice);
+  const [notice, setNotice] = useState(
+    () => translations[initialLanguage].readyNotice,
+  );
   const [copied, setCopied] = useState<string | null>(null);
   const hasLoadedHash = useRef(false);
   const t = translations[language];
@@ -264,7 +273,9 @@ function App() {
             className="icon-button"
             type="button"
             title={t.copyJson}
-            onClick={() => handleCopy("json", JSON.stringify(selectedPalette, null, 2))}
+            onClick={() =>
+              handleCopy("json", JSON.stringify(selectedPalette, null, 2))
+            }
           >
             {copied === "json" ? <Check size={18} /> : <FileJson size={18} />}
           </button>
@@ -296,7 +307,11 @@ function App() {
           <p>{t.introBody}</p>
           <p className="intro-link">
             {t.introLinkPrefix}{" "}
-            <a href="https://www.jonasolson.se" target="_blank" rel="noreferrer">
+            <a
+              href="https://www.jonasolson.se"
+              target="_blank"
+              rel="noreferrer"
+            >
               www.jonasolson.se
             </a>
             .
@@ -310,7 +325,11 @@ function App() {
       </section>
 
       <section className="controls-band" aria-label={t.controlsLabel}>
-        <div className="mode-switch" role="group" aria-label={t.previewModeLabel}>
+        <div
+          className="mode-switch"
+          role="group"
+          aria-label={t.previewModeLabel}
+        >
           {previewModes.map((previewMode) => (
             <button
               aria-pressed={mode === previewMode.id}

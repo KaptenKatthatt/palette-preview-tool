@@ -1,23 +1,21 @@
 # Palette Preview Lab
 
-Palette Preview Lab is a small internal design tool for comparing color palettes in realistic portfolio UI contexts.
+Palette Preview Lab is a lightweight design tool for comparing color palettes for the web. Paste palettes from an AI partner or your own JSON and see how colors work in realistic UI previews — not just as abstract swatches.
 
-It was built for exploring the visual direction of Jonas Olson's portfolio: a light, editorial, subtly orbital interface using Literata, Inter, and IBM Plex Mono.
-
-The goal is simple: make it easier to answer whether a palette feels right when it is actually used in a portfolio, not only shown as abstract swatches.
+The goal is simple: make it easier to answer whether a palette feels right when it is actually used on a website, not only shown as color chips.
 
 ## Features
 
 - Compare multiple palettes side by side
 - View colors as named roles with hex or rgba values
-- Preview each palette in portfolio-like UI sections
+- Preview each palette in realistic web UI sections
 - Switch between Hero, Projects, Editorial, and Dark preview modes
 - Paste one or more AI-generated palettes as JSON
 - Validate required color roles on import
 - Export the selected palette as CSS variables
 - Copy palette JSON
 - Generate a shareable URL hash for a selected palette
-- Check basic contrast pairs such as ink on paper and solar on deep space
+- Check basic contrast pairs between text, background, and accent colors
 
 ## Tech Stack
 
@@ -67,7 +65,7 @@ The app accepts a single palette object, an array of palette objects, or an obje
 ```json
 {
   "name": "Editorial Orbit",
-  "description": "Warm editorial palette for Jonas portfolio",
+  "description": "Warm editorial palette for a content-focused website",
   "colors": {
     "paper": "#F4EFE6",
     "paperSoft": "#FBF7EF",
@@ -129,4 +127,4 @@ This version focuses on fast visual decision-making:
 - CSS variable export
 - simple contrast feedback
 
-Future improvements could include localStorage persistence, richer contrast checks, portfolio token export, and more preview templates.
+Future improvements could include localStorage persistence, richer contrast checks, design token export, and more preview templates.
