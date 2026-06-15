@@ -146,6 +146,33 @@ function App() {
         </div>
       </section>
 
+      <section className="intro-band" aria-labelledby="intro-title">
+        <div>
+          <p className="section-label">Så funkar det</p>
+          <h2 id="intro-title">Ett litet labb för att jämföra palettidéer innan de blir designbeslut.</h2>
+          <p>
+            Klistra in palett-JSON från din AI, växla mellan preview-lägen och jämför hur
+            varje färgsystem beter sig i hero, projekt, editorial och mörka sektioner. Välj
+            en palett för att kopiera CSS-variabler, exportera JSON eller dela en URL med
+            den aktuella paletten inbäddad.
+          </p>
+          <p className="intro-link">
+            Byggd för färgdiskussioner kring{" "}
+            <a href="https://www.jonasolson.se" target="_blank" rel="noreferrer">
+              www.jonasolson.se
+            </a>
+            .
+          </p>
+        </div>
+        <div className="prompt-example">
+          <p className="section-label">Exempelprompt</p>
+          <p>
+            Använd den här när du vill låta en AI ta fram paletter för en designdiskussion:
+          </p>
+          <pre>{`Skapa 3 palettförslag för en portfoliosida och returnera dem som JSON för Palette Preview Lab. Använd rollerna: paper, paperSoft, paperWarm, ink, inkSoft, inkMuted, line, lineStrong, solar, solarBright, copper, deepSpace, spaceBlue. Gör ett varmt editorial-förslag, ett svalare tekniskt förslag och ett mer uttrycksfullt högkontrastförslag. Förklara kort vilken designavvägning varje palett testar.`}</pre>
+        </div>
+      </section>
+
       <section className="controls-band" aria-label="Palette controls">
         <div className="mode-switch" role="group" aria-label="Preview mode">
           {previewModes.map((previewMode) => (

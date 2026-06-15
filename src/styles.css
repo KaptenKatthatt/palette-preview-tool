@@ -129,11 +129,62 @@ h2 {
 }
 
 .controls-band,
+.intro-band,
 .export-band {
   max-width: 1600px;
   margin: 0 auto 24px;
   border-top: 1px solid rgba(7, 24, 39, 0.14);
   border-bottom: 1px solid rgba(7, 24, 39, 0.14);
+}
+
+.intro-band {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.85fr) minmax(320px, 1fr);
+  gap: 28px;
+  padding: 24px 0;
+}
+
+.intro-band h2 {
+  max-width: 720px;
+  margin-bottom: 10px;
+}
+
+.intro-band p:not(.section-label),
+.prompt-example p:not(.section-label) {
+  max-width: 760px;
+  color: #5e6873;
+  line-height: 1.55;
+}
+
+.intro-link {
+  margin-top: 14px;
+}
+
+.intro-link a {
+  color: #8d5a22;
+  font-weight: 650;
+  text-decoration-color: rgba(141, 90, 34, 0.42);
+  text-underline-offset: 4px;
+}
+
+.intro-link a:hover,
+.intro-link a:focus-visible {
+  color: #071827;
+  text-decoration-color: #071827;
+}
+
+.prompt-example pre {
+  overflow-x: auto;
+  white-space: pre-wrap;
+  margin: 12px 0 0;
+  border: 1px solid rgba(7, 24, 39, 0.14);
+  border-radius: 8px;
+  padding: 14px;
+  background: rgba(255, 251, 244, 0.78);
+  color: #071827;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.78rem;
+  line-height: 1.5;
 }
 
 .controls-band {
@@ -651,6 +702,7 @@ h2 {
   }
 
   .topbar,
+  .intro-band,
   .controls-band,
   .import-panel,
   .export-band {
