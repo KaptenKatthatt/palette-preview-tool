@@ -39,7 +39,9 @@ pre,
   background:
     linear-gradient(90deg, rgba(7, 24, 39, 0.05) 1px, transparent 1px),
     linear-gradient(#f8f3eb, #efe8dc);
-  background-size: 80px 80px, auto;
+  background-size:
+    80px 80px,
+    auto;
 }
 
 .topbar {
@@ -82,7 +84,7 @@ h1 {
   max-width: 780px;
   margin-bottom: 0;
   font-size: clamp(2.15rem, 6vw, 5.8rem);
-  line-height: 0.98;
+  line-height: 1.1;
 }
 
 h2 {
@@ -431,9 +433,23 @@ h2 {
   min-height: 158px;
   border-radius: 50%;
   background:
-    radial-gradient(circle at center, var(--primary-hover) 0 5px, transparent 6px),
-    radial-gradient(circle at center, transparent 31px, var(--border) 32px 33px, transparent 34px),
-    radial-gradient(circle at center, transparent 61px, var(--border-strong) 62px 63px, transparent 64px);
+    radial-gradient(
+      circle at center,
+      var(--primary-hover) 0 5px,
+      transparent 6px
+    ),
+    radial-gradient(
+      circle at center,
+      transparent 31px,
+      var(--border) 32px 33px,
+      transparent 34px
+    ),
+    radial-gradient(
+      circle at center,
+      transparent 61px,
+      var(--border-strong) 62px 63px,
+      transparent 64px
+    );
 }
 
 .orbit-visual span {
@@ -465,11 +481,7 @@ h2 {
   position: relative;
   min-height: 158px;
   border-radius: 8px;
-  background: linear-gradient(
-    145deg,
-    var(--surface-alt),
-    var(--surface)
-  );
+  background: linear-gradient(145deg, var(--surface-alt), var(--surface));
   border: 1px solid var(--border);
 }
 
@@ -677,11 +689,7 @@ h2 {
 .ecommerce-image {
   min-height: 56px;
   border-radius: 6px;
-  background: linear-gradient(
-    135deg,
-    var(--surface-alt),
-    var(--primary-hover)
-  );
+  background: linear-gradient(135deg, var(--surface-alt), var(--primary-hover));
 }
 
 .ecommerce-card small {
